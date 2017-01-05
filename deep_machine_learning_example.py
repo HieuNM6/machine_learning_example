@@ -122,12 +122,13 @@ def input_fn(df):
 
 def train_and_eval():
   """Train and evaluate the model."""
-  train_file_name, test_file_name = "adult.data", "adult.test"
+  train_file_name, test_file_name, predict_file_name = "adult.data", "adult.test", "predict.data"
   df_train = pd.read_csv(
       tf.gfile.Open(train_file_name),
       names=COLUMNS,
       skipinitialspace=True,
       engine="python")
+
   df_test = pd.read_csv(
       tf.gfile.Open(test_file_name),
       names=COLUMNS,
@@ -135,14 +136,23 @@ def train_and_eval():
       skiprows=1,
       engine="python")
 
+  df_predict = pd.read_csv(
+      tf.gfile.Open(predict_file_name),
+      names=COLUMNS,
+      skipinitialspace=True,
+      engine="python")
+
   # remove NaN elements
   df_train = df_train.dropna(how='any', axis=0)
   df_test = df_test.dropna(how='any', axis=0)
+  df_predict = df_predict.dropna(how='any', axis=0)
 
   df_train[LABEL_COLUMN] = (
       df_train["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
   df_test[LABEL_COLUMN] = (
       df_test["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
+  df_predict[LABEL_COLUMN] = (
+      df_predict["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
 
   model_dir = tempfile.mkdtemp() if not FLAGS.model_dir else FLAGS.model_dir
   print("model directory = %s" % model_dir)
@@ -152,6 +162,10 @@ def train_and_eval():
   results = m.evaluate(input_fn=lambda: input_fn(df_test), steps=1)
   for key in sorted(results):
     print("%s: %s" % (key, results[key]))
+
+  # Test for predict.data
+  y = list(m.predict(input_fn=lambda: input_fn(df_predict), as_iterable=False))
+  print(y)
 
 
 def main(_):
