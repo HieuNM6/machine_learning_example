@@ -166,6 +166,8 @@ def train_and_eval():
   # Test for predict.data
   y = list(m.predict(input_fn=lambda: input_fn(df_predict), as_iterable=False))
   print(y)
+  # Right result for predicted data
+  print([0,0,1,1,0,0,0,1,0,0,1,0,0,0])
 
 
 def main(_):
